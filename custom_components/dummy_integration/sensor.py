@@ -5,7 +5,7 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from .coordinators.dummy_integration import DummyIntegrationCoordinator
+from .coordinators.dummy_integration import DummyIntegrationCoordinator, write_state
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -21,25 +21,16 @@ class DummyIntegrationSensorEntityDescription(SensorEntityDescription):
     unique_id: str | None = None
 
 
-SENSORS = (
+SENSORS = [
     DummyIntegrationSensorEntityDescription(
-        key="key",
+        key="test_int",
         name="Name",
         unique_id="name",
         native_unit_of_measurement="GBP",
         icon="mdi:currency-gbp",
         state_class=SensorStateClass.MEASUREMENT
     ),
-    DummyIntegrationSensorEntityDescription(
-        key="key2",
-        name="Name 2",
-        unique_id="name_2",
-        native_unit_of_measurement="GBP",
-        icon="mdi:currency-gbp",
-        state_class=SensorStateClass.MEASUREMENT
-    ),
-
-)
+]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     coordinator: DummyIntegrationCoordinator = hass.data[DOMAIN][DATA_CLIENT]
@@ -65,21 +56,21 @@ class DummyIntegrationSensor(CoordinatorEntity[DummyIntegrationCoordinator], Sen
             entry_type=DeviceEntryType.SERVICE,
             identifiers={(DOMAIN, coordinator.entry_id)},
             manufacturer="JRascagneres",
-            name="National Grid",
+            name="Dummy Integration",
         )
 
         self._attr_unique_id = f"{coordinator.entry_id}_{description.unique_id}"
         self._attr_icon = description.icon
 
-        @property
-        def available(self) -> bool:
-            return True
+    @property
+    def available(self) -> bool:
+        return True
 
-        @property
-        def native_value(self) -> float | datetime | None:
-            value = self.coordinator.data[self.entity_description.key]
-            return value
+    @property
+    def native_value(self) -> float | datetime | None:
+        value = self.coordinator.data[self.entity_description.key]
+        return value
 
-        @property
-        def native_unit_of_measurement(self) -> str | None:
-            return self.entity_description.native_unit_of_measurement
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        return self.entity_description.native_unit_of_measurement
